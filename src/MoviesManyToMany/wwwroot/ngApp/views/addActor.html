@@ -1,0 +1,15 @@
+﻿
+<div>
+    <form ng-submit="controller.addActor()">
+        First Name: <input type="text" ng-model="controller.firstName" /><br />
+        Last Name: <input type="text" ng-model="controller.lastName" /><br />
+
+        Movies: <select 
+                        ng-model="controller.selectedMovie"
+                        ng-options="movie.title for movie in controller.movies track by movie.movieId">
+        </select><br />
+
+        <input type="submit" value="Add" />
+
+    </form>
+</div>
