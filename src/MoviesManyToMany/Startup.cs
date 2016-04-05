@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using MoviesManyToMany.Models;
 using MoviesManyToMany.Services;
 using Newtonsoft.Json.Serialization;
+using MoviesManyToMany.Infrastructure;
 
 namespace MoviesManyToMany
 {
@@ -55,6 +56,8 @@ namespace MoviesManyToMany
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
+            //Repository
+            services.AddScoped<MovieRepository>();
             // convert Pascal to Camel
             services.AddMvc().AddJsonOptions(options => {
                 options.SerializerSettings.ContractResolver =

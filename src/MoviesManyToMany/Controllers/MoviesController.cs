@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using MoviesManyToMany.Models;
+using MoviesManyToMany.Infrastructure;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,17 +13,20 @@ namespace MoviesManyToMany.Controllers
     [Route("api/[controller]")]
     public class MoviesController : Controller
     {
-        private ApplicationDbContext _context;
+        
+        private MovieRepository _movieRepo;
 
-        public MoviesController(ApplicationDbContext context)
+        public MoviesController(MovieRepository movieRepo)
         {
-            this._context = context;
+          
+            _movieRepo = movieRepo;
         }
         // GET: api/values
         [HttpGet]
-        public IActionResult GetActors()
+        public IActionResult GetMoviesWithActors()
         {
-            var actors = _context.Movies.Select(m => new
+            var actors = (from m in _movieRepo.GetAllMovies()
+                         select new
             {
                 MovieId = m.Id,
                 Title = m.Title,
@@ -31,6 +35,30 @@ namespace MoviesManyToMany.Controllers
 
             return Ok(actors);
         }
+
+        [HttpGet("{id}")]
+        public IActionResult GetMovie(int id){
+            var movie = (from m in _movieRepo.FindById(id) 
+                select new
+                {
+                    Title = m.Title,
+                    Actors = (from ma in m.MovieActors
+                              select ma.Actor).ToList()
+                }).FirstOrDefault();
+            return Ok(movie);
+        }
+
+
+        [HttpGet("byActor/{name}")]
+        public IActionResult GetMoviesByActorName(string name)
+        {
+            //return Ok((from m in _MovieRepo.FindMoviesByActorName(name)
+            //           select m).ToList());
+
+            return Ok(_movieRepo.FindMoviesByActorName(name).ToList());
+        }
+
+
 
 
         // POST api/values
@@ -41,16 +69,16 @@ namespace MoviesManyToMany.Controllers
                 return HttpBadRequest(ModelState);
             }
             // create actor
-            _context.Actors.Add(actor);
-            _context.SaveChanges();
+            _movieRepo.AddActor(actor);
+            _movieRepo.SaveChanges();
 
             // add actor to existing movie
-            _context.MovieActors.Add(new MovieActor
+            _movieRepo.AddMovieActor(new MovieActor
             {
                 MovieId = id,
                 ActorId = actor.Id
             });
-            _context.SaveChanges();
+            _movieRepo.SaveChanges();
 
             // success
             return Ok();
